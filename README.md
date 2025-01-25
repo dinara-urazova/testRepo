@@ -26,5 +26,5 @@ and then  open your browser.
 # TODO
 - [x] Сделать хранилище для списка пользователей на основании баз данных (самый простой вариант - БД SQLite)
 - [x] SQLite
-- [] PostgreSQL  - будем использовать "голые" запросы к БД при помощи pg8000 https://github.com/tlocke/pg8000/
-- [] SQL ALchemy (diffieculties with config and connection issues)
+- [ ] PostgreSQL  - будем использовать "голые" запросы к БД при помощи pg8000 https://github.com/tlocke/pg8000/
+- [ ] SQL ALchemy (diffieculties with config and connection issues)
