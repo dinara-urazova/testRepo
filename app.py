@@ -74,9 +74,6 @@ def login():
     
     return render_template('login.html', title='Sign In', form=form)
 
-    
-    # return abort(403, 'Forbidden')
-
 @app.route("/logout", methods=["GET"])
 def logout():
     user_uuid = request.cookies.get(COOKIE_NAME)
@@ -94,7 +91,7 @@ def secret():
     user_uuid = request.cookies.get(COOKIE_NAME)
     if user_uuid in session_memory_storage:
         user = session_memory_storage[user_uuid]['user']
-        return f'Welcome, {user}!'
+        return render_template('secret.html', user=user.title())
     return redirect('/')
 
 
