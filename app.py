@@ -3,9 +3,12 @@ from user import User
 from forms import LoginForm, RegisterForm
 import uuid
 
-from sqlite_singleton import SQLiteSingleton
+# from sqlite_singleton import SQLiteSingleton
+from postgresql_singleton import PostgreSQLSingleton
 from werkzeug.security import generate_password_hash, check_password_hash
-from user_storage_sqlite import UserStorageSQLite
+# from user_storage_sqlite import UserStorageSQLite
+from user_storage_postgresql import UserStoragePostgreSQL
+
 from config import Config
 
 
@@ -15,7 +18,7 @@ app.config.from_object(Config)
 COOKIE_NAME = 'session'
 
 session_memory_storage = {}
-user_storage = UserStorageSQLite()
+user_storage = UserStoragePostgreSQL()
 
 @app.route("/", methods=["GET"])
 def root():
@@ -34,18 +37,17 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        username = form.username.data
+        username = form.username.data,
         password = form.password.data
-        print(username, password)
-
+        
         if user_storage.user_exists(username):
             flash("You are already registered")
             return redirect('/login')
         else:
+            hashed_password = generate_password_hash(password)
             user_storage.create_user(username, password)
             flash('You have successfully registered')
             return redirect("/login")
-          
 
     return render_template('register.html', title='Register', form=form)
 

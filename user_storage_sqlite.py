@@ -28,7 +28,7 @@ class UserStorageSQLite:
             return count > 0
         
     
-    def verify_user(self, username: str, password=None) -> bool:
+    def verify_user(self, username: str, password) -> bool:
         connection = SQLiteSingleton.getConnection()
         with connection:
             cursor = SQLiteSingleton.getConnection().cursor()
