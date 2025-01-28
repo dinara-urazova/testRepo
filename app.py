@@ -37,15 +37,14 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        username = form.username.data,
+        username = form.username.data
         password = form.password.data
         
         if user_storage.user_exists(username):
-            flash("You are already registered")
-            return redirect('/login')
+            flash("You are already registered, try to login")
         else:
             hashed_password = generate_password_hash(password)
-            user_storage.create_user(username, password)
+            user_storage.create_user(username, hashed_password)
             flash('You have successfully registered')
             return redirect("/login")
 
@@ -72,7 +71,6 @@ def login():
             return r
         
         flash('Invalid username or password')
-        return redirect('/')
     
     return render_template('login.html', title='Sign In', form=form)
 
