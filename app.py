@@ -8,7 +8,7 @@ from postgresql_singleton import PostgreSQLSingleton
 from werkzeug.security import generate_password_hash, check_password_hash
 # from user_storage_sqlite import UserStorageSQLite
 from user_storage_postgresql import UserStoragePostgreSQL
-
+from http import HTTPStatus
 from config import Config
 
 
@@ -71,7 +71,8 @@ def login():
             return r
         
         flash('Invalid username or password')
-    
+    elif form.csrf_token.errors:
+        abort(HTTPStatus.FORBIDDEN.value)     
     return render_template('login.html', title='Sign In', form=form)
 
 @app.route("/logout", methods=["GET"])
@@ -91,8 +92,10 @@ def secret():
     user_uuid = request.cookies.get(COOKIE_NAME)
     if user_uuid in session_memory_storage:
         user = session_memory_storage[user_uuid]['user']
-        return render_template('secret.html', user=user.title())
-    return redirect('/')
+        r = make_response(render_template('secret.html', user=user.title()))
+        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=60*60)
+        return r
+    return abort(HTTPStatus.UNAUTHORIZED.value)
 
 
 
