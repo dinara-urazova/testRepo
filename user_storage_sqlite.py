@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 class UserStorageSQLite:
 
     def create_user(self, username: str, password: str) -> int:
-        connection = SQLiteSingleton.getConnection()
+        connection = SQLiteSingleton.getConnection() # вызов метода через класс (без экземпляра)
         with connection:
             cursor = SQLiteSingleton.getConnection().cursor()
             hashed_password = generate_password_hash(password)
@@ -35,8 +35,8 @@ class UserStorageSQLite:
             result = cursor.execute("SELECT password FROM users WHERE login = ?", (username,))
             row = result.fetchone()
             if row:
-                db_pwd = row[0]
-                if check_password_hash(db_pwd, password):
+                pwd_hash = row[0]
+                if check_password_hash(pwd_hash, password):
                     return True
             return False
 

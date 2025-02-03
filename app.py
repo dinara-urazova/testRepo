@@ -36,7 +36,6 @@ def register():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        print(username, password)
 
         if user_storage.user_exists(username):
             flash("You are already registered")
@@ -65,6 +64,7 @@ def login():
 
             user_uuid = str(uuid.uuid4())
             session_memory_storage[user_uuid] = {'user': username}
+            # e.g. {'1e7545e4-2b9e-4669-970e-263416114f18': {'user': 'Felix'}}
             r = make_response(redirect('/secret'))
             r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=60*60)
             return r
@@ -81,7 +81,7 @@ def logout():
         del session_memory_storage[user_uuid] # delete on server
 
         r = make_response(redirect('/'))
-        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=0) # to delete in browser
+        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=0) # delete in browser (no other way to delete cookie but to set max_age to negative/zero )
         return r
     return redirect('/')
     
