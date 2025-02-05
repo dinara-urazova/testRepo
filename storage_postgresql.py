@@ -21,9 +21,8 @@ class UserStoragePostgreSQL:
         result = PostgreSQLSingleton.getConnection().run(
             "SELECT password FROM users WHERE login = :login", login=username
         )
-        row = result[0]
-        if row:
-            db_pwd = row[0]
+        if result:
+            db_pwd = result[0][0]
             if check_password_hash(db_pwd, password):
                 return True
         return False
