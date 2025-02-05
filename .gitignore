@@ -2,3 +2,4 @@
 __pycache__
 later/
 users.db
+.env
