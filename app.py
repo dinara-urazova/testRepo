@@ -77,11 +77,11 @@ def login():
 @app.route("/logout", methods=["GET"])
 def logout():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
+    if session_storage.session_exists(user_uuid):
         session_storage.delete_session(user_uuid) # delete on server
 
         r = make_response(redirect('/'))
-        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=0) # to delete in browser
+        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=0) # delete in browser
         return r
     return redirect('/')
     
