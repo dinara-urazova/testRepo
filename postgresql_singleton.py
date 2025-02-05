@@ -1,5 +1,9 @@
 import pg8000.native
+import os
+from dotenv import load_dotenv
+from config import Config
 
+load_dotenv()  # загружает перем окружения из файла .env
 
 class PostgreSQLSingleton:
     _connection = None  # статический атрибут класса (будет общим для всех экземпляров класса), хранит единств экземпляр соединения с БД. Изначально None
@@ -32,5 +36,18 @@ class PostgreSQLSingleton:
     @classmethod  # метод класса, cls (класс)  аналог self(экз)
     def getConnection(cls):  # cls ссылается на класс SQLiteSingleton 
         if cls._connection is None:
-            cls._connection = pg8000.native.Connection("dinaraurazova")
+            cls._connection = pg8000.native.Connection(
+    user=Config.POSTGRESQL_USERNAME,
+    password=Config.POSTGRESQL_PASSWORD,
+    database=Config.POSTGRESQL_DATABASE,
+    host=Config.POSTGRESQL_HOSTNAME,
+    port=int(Config.POSTGRESQL_PORT),
+)
         return cls._connection
+    
+
+    # @classmethod
+    # def closeConnection(cls):
+    #     if cls._connection is not None:
+    #         cls._connection.close()
+    #         cls._connection = None 

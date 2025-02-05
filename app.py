@@ -3,11 +3,9 @@ from user import User
 from forms import LoginForm, RegisterForm
 import uuid
 
-# from sqlite_singleton import SQLiteSingleton
 from postgresql_singleton import PostgreSQLSingleton
 from werkzeug.security import generate_password_hash, check_password_hash
-# from user_storage_sqlite import UserStorageSQLite
-from user_storage_postgresql import UserStoragePostgreSQL
+from storage_postgresql import UserStoragePostgreSQL, SessionStoragePostgreSQL
 from http import HTTPStatus
 from config import Config
 
@@ -19,11 +17,12 @@ COOKIE_NAME = 'session'
 
 session_memory_storage = {}
 user_storage = UserStoragePostgreSQL()
+session_storage=SessionStoragePostgreSQL()
 
 @app.route("/", methods=["GET"])
 def root():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
+    if session_storage.session_exists(user_uuid):
         return redirect("/secret")
     return render_template("base.html")
 
@@ -31,7 +30,7 @@ def root():
 @app.route("/register", methods=["POST", "GET"])
 def register():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
+    if session_storage.session_exists(user_uuid):
         return redirect("/secret")
     
     form = RegisterForm()
@@ -41,7 +40,7 @@ def register():
         password = form.password.data
         
         if user_storage.user_exists(username):
-            flash("You are already registered, try to login")
+            flash("You are already registered, try to log in")
         else:
             hashed_password = generate_password_hash(password)
             user_storage.create_user(username, hashed_password)
@@ -53,7 +52,7 @@ def register():
 @app.route("/login", methods=["POST", "GET"])
 def login():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
+    if session_storage.session_exists(user_uuid):
         return redirect("/secret")
     
     form = LoginForm()
@@ -65,7 +64,7 @@ def login():
         if user_storage.verify_user(username, password):
 
             user_uuid = str(uuid.uuid4())
-            session_memory_storage[user_uuid] = {'user': username}
+            session_storage.create_session(user_uuid, username)
             r = make_response(redirect('/secret'))
             r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=60*60)
             return r
@@ -79,7 +78,7 @@ def login():
 def logout():
     user_uuid = request.cookies.get(COOKIE_NAME)
     if user_uuid in session_memory_storage:
-        del session_memory_storage[user_uuid] # delete on server
+        session_storage.delete_session(user_uuid) # delete on server
 
         r = make_response(redirect('/'))
         r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=0) # to delete in browser
@@ -90,8 +89,8 @@ def logout():
 @app.route("/secret", methods=["GET"])
 def secret():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
-        user = session_memory_storage[user_uuid]['user']
+    if session_storage.session_exists(user_uuid):
+        user = session_storage.get_username(user_uuid)
         r = make_response(render_template('secret.html', user=user.title()))
         r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=60*60)
         return r

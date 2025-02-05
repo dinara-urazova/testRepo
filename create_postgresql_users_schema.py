@@ -16,7 +16,7 @@ connection = pg8000.native.Connection(user=db_user, password=db_password, databa
 sql_create_table = """
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    login TEXT, 
+    login TEXT UNIQUE NOT NULL, 
     password TEXT)
 """
 
