@@ -1,13 +1,14 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, validators
+from wtforms import StringField, PasswordField, SubmitField, validators
 
 class RegisterForm(FlaskForm):
     username = StringField("Username", [validators.Length(min=4, max=25, message="Username should be between 4-25 characters")])
     password = PasswordField(
         "New Password",
         [
-            validators.DataRequired(),
+            validators.DataRequired(), 
             validators.EqualTo("confirm", message="Passwords must match"),
+            validators.Length(min=8, message="Password should be at least 8 characters")
         ],
     )
     confirm = PasswordField("Repeat Password")

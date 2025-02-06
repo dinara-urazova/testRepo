@@ -1,5 +1,4 @@
 import pg8000.native
-import os
 from dotenv import load_dotenv
 from config import Config
 
@@ -19,16 +18,26 @@ connection = pg8000.native.Connection(
     port=int(db_port),
 )  # устанавливает соединение с БД
 
-sql_create_table = """
+sql_create_table_sessions = """
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
-    user_uuid TEXT NOT NULL, 
-    username TEXT NOT NULL)
+    user_uuid VARCHAR(36) UNIQUE NOT NULL, 
+    username VARCHAR(25) NOT NULL
+)
 """
 
-connection.run(sql_create_table)
+connection.run(sql_create_table_sessions)
+
+
+sql_create_table_users = """
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    login VARCHAR(25) UNIQUE NOT NULL, 
+    password VARCHAR(255) NOT NULL
+)
+"""
+
+connection.run(sql_create_table_users)
 
 
 connection.close()
-
-
