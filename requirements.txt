@@ -2,6 +2,6 @@ flask
 flask-wtf
 SQLAlchemy
 pg8000
-users.db
+python-dotenv
 
 

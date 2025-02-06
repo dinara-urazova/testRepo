@@ -3,9 +3,10 @@ from user import User
 from forms import LoginForm, RegisterForm
 import uuid
 
-from sqlite_singleton import SQLiteSingleton
+from postgresql_singleton import PostgreSQLSingleton
 from werkzeug.security import generate_password_hash, check_password_hash
-from user_storage_sqlite import UserStorageSQLite
+from storage_postgresql import UserStoragePostgreSQL, SessionStoragePostgreSQL
+from http import HTTPStatus
 from config import Config
 
 
@@ -14,13 +15,13 @@ app.config.from_object(Config)
 
 COOKIE_NAME = 'session'
 
-session_memory_storage = {}
-user_storage = UserStorageSQLite()
+user_storage = UserStoragePostgreSQL()
+session_storage=SessionStoragePostgreSQL()
 
 @app.route("/", methods=["GET"])
 def root():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
+    if session_storage.session_exists(user_uuid):
         return redirect("/secret")
     return render_template("base.html")
 
@@ -28,7 +29,7 @@ def root():
 @app.route("/register", methods=["POST", "GET"])
 def register():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
+    if session_storage.session_exists(user_uuid):
         return redirect("/secret")
     
     form = RegisterForm()
@@ -36,23 +37,21 @@ def register():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        print(username, password)
-
+        
         if user_storage.user_exists(username):
-            flash("You are already registered")
-            return redirect('/login')
+            flash("You are already registered, try to log in")
         else:
-            user_storage.create_user(username, password)
+            hashed_password = generate_password_hash(password)
+            user_storage.create_user(username, hashed_password)
             flash('You have successfully registered')
             return redirect("/login")
-          
 
     return render_template('register.html', title='Register', form=form)
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
+    if session_storage.session_exists(user_uuid):
         return redirect("/secret")
     
     form = LoginForm()
@@ -62,29 +61,25 @@ def login():
         password = form.password.data
 
         if user_storage.verify_user(username, password):
-
             user_uuid = str(uuid.uuid4())
-            session_memory_storage[user_uuid] = {'user': username}
+            session_storage.create_session(user_uuid, username)
             r = make_response(redirect('/secret'))
             r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=60*60)
             return r
         
         flash('Invalid username or password')
-        return redirect('/')
-    
+    elif form.csrf_token.errors:
+        abort(HTTPStatus.FORBIDDEN.value)     
     return render_template('login.html', title='Sign In', form=form)
-
-    
-    # return abort(403, 'Forbidden')
 
 @app.route("/logout", methods=["GET"])
 def logout():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
-        del session_memory_storage[user_uuid] # delete on server
+    if session_storage.session_exists(user_uuid):
+        session_storage.delete_session(user_uuid) # delete on server
 
         r = make_response(redirect('/'))
-        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=0) # to delete in browser
+        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=0) # delete in browser
         return r
     return redirect('/')
     
@@ -92,10 +87,12 @@ def logout():
 @app.route("/secret", methods=["GET"])
 def secret():
     user_uuid = request.cookies.get(COOKIE_NAME)
-    if user_uuid in session_memory_storage:
-        user = session_memory_storage[user_uuid]['user']
-        return f'Welcome, {user}!'
-    return redirect('/')
+    if session_storage.session_exists(user_uuid):
+        user = session_storage.get_username(user_uuid)
+        r = make_response(render_template('secret.html', user=user.title()))
+        r.set_cookie(COOKIE_NAME, user_uuid, path="/", max_age=60*60)
+        return r
+    return abort(HTTPStatus.UNAUTHORIZED.value)
 
 
 

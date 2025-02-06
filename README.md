@@ -26,5 +26,10 @@ and then  open your browser.
 # TODO
 - [x] Сделать хранилище для списка пользователей на основании баз данных (самый простой вариант - БД SQLite)
 - [x] SQLite
-- [ ] PostgreSQL  - будем использовать "голые" запросы к БД при помощи pg8000 https://github.com/tlocke/pg8000/
-- [ ] SQL ALchemy (diffieculties with config and connection issues)
+- [x] PostgreSQL  - будем использовать "голые" запросы к БД при помощи pg8000 https://github.com/tlocke/pg8000/
+- [ ] Перенести storage из массива в БД (отдельная таблица в postgres)
+session_storage, колонки - id, user_uuid(str), username
+В модуле storage_postgres сделать ф-ции для созд-яб поиска и удаления сессии
+Где исп-ся session_memory_storage - заменить на вызов storage_postgres
+Проверить, что все раб-т Проверка - залог-ся, выкл сервер и снова вкл Сессия дб актуальной
+- [ ] Перейти на flask инструменты по хранению сессий (flask session)
