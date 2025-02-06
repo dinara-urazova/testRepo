@@ -2,7 +2,9 @@ from user import User
 from postgresql_singleton import PostgreSQLSingleton
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 class UserStoragePostgreSQL:
+    
     def create_user(self, login, hashed_password) -> None:
         PostgreSQLSingleton.getConnection().run(
             "INSERT INTO users (login, password) VALUES (:login, :hashed_password)",
@@ -27,30 +29,35 @@ class UserStoragePostgreSQL:
                 return True
         return False
 
-class SessionStoragePostgreSQL: 
 
-    def create_session(self, user_uuid: str, username: str) -> None: # when logging in
-            PostgreSQLSingleton.getConnection().run(
+class SessionStoragePostgreSQL:
+
+    def create_session(self, user_uuid: str, username: str) -> None:  # when logging in
+        PostgreSQLSingleton.getConnection().run(
             "INSERT INTO sessions (user_uuid, username) VALUES (:user_uuid, :username)",
             user_uuid=user_uuid,
             username=username,
         )
-    
-    def session_exists(self, user_uuid: str): # д возвращать true если сессия есть и false если сессии нет
+
+    def session_exists(
+        self, user_uuid: str
+    ):  # д возвращать true если сессия есть и false если сессии нет
         result = PostgreSQLSingleton.getConnection().run(
-            "SELECT COUNT(*) FROM sessions WHERE user_uuid = :user_uuid", user_uuid=user_uuid
+            "SELECT COUNT(*) FROM sessions WHERE user_uuid = :user_uuid",
+            user_uuid=user_uuid,
         )
         count = result[0][0]
         return count > 0
-    
+
     def get_username(self, user_uuid: str) -> str:
         result = PostgreSQLSingleton.getConnection().run(
-            "SELECT username FROM sessions WHERE user_uuid = :user_uuid", user_uuid=user_uuid
+            "SELECT username FROM sessions WHERE user_uuid = :user_uuid",
+            user_uuid=user_uuid,
         )
         db_user = result[0][0]
         return db_user
 
     def delete_session(self, user_uuid: str) -> None:
         PostgreSQLSingleton.getConnection().run(
-         "DELETE FROM sessions WHERE user_uuid = :user_uuid", user_uuid=user_uuid
+            "DELETE FROM sessions WHERE user_uuid = :user_uuid", user_uuid=user_uuid
         )

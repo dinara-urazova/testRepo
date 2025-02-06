@@ -15,7 +15,6 @@ app.config.from_object(Config)
 
 COOKIE_NAME = 'session'
 
-session_memory_storage = {}
 user_storage = UserStoragePostgreSQL()
 session_storage=SessionStoragePostgreSQL()
 
@@ -62,7 +61,6 @@ def login():
         password = form.password.data
 
         if user_storage.verify_user(username, password):
-
             user_uuid = str(uuid.uuid4())
             session_storage.create_session(user_uuid, username)
             r = make_response(redirect('/secret'))
