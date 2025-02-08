@@ -1,10 +1,8 @@
 from flask import Flask, make_response, flash, request, render_template, redirect, abort
-from user import User
 from forms import LoginForm, RegisterForm
 import uuid
 
-from postgresql_singleton import PostgreSQLSingleton
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 from storage_postgresql import UserStoragePostgreSQL, SessionStoragePostgreSQL
 from http import HTTPStatus
 from config import Config
@@ -49,7 +47,7 @@ def register():
             flash("You have successfully registered")
             return redirect("/login")
 
-    return render_template("register.html", title="Register", form=form)
+    return render_template("register.html", title="Register", form=form) # GET запрос
 
 
 @app.route("/login", methods=["POST", "GET"])
