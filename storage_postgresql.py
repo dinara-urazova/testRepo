@@ -12,6 +12,12 @@ class UserData(NamedTuple):
 class UserStoragePostgreSQL:
 
     def create_user(self, login, hashed_password) -> None:
+        """
+        пояснения по синтаксису 
+        вставить в колонки Значения (через : передаются именованные параметры в sql-запросе), далее 
+        login (именованный параметр) = login (фактическое значение, кот передается в аргументеь при вызове метода create_user)
+
+        """
         PostgreSQLSingleton.getConnection().run(
             "INSERT INTO users (login, password) VALUES (:login, :hashed_password)",
             login=login,
@@ -19,6 +25,9 @@ class UserStoragePostgreSQL:
         )
 
     def find_or_verify_user(self, username: str, password: str) -> UserData | None:
+        """
+        where login (from db) = :login (именов параметр), благодаря login (именов параметр)= username (фактич значение) на место :login подставляется фактич значение username 
+        """
         result = PostgreSQLSingleton.getConnection().run(
             "SELECT id, login, password FROM users WHERE login = :login",
             login=username,

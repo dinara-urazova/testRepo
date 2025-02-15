@@ -62,10 +62,9 @@ def login():
         username = form.username.data
         password = form.password.data
 
-        user_data = user_storage.find_or_verify_user(
+        if user_storage.find_or_verify_user(
             username, password
-        )  # поиск и проверка пользователя
-        if user_data:
+        ):  # поиск и проверка пользователя
             user_uuid = str(uuid.uuid4())
             session_storage.create_session(user_uuid, username)
             r = make_response(redirect("/secret"))
